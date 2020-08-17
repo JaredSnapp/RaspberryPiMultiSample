@@ -8,54 +8,50 @@ Fill the missing notes with pitch shifted versions of the existing ones.'''
 Keep less than 4 ms (~22us per sample). Have a class of audio data ready to fill with audio data and 
 add to the stream.'''
 
-'''
-class Voice:
-    dataPresent = 0  # flag to tell loop whether to process this voice
-    data = []  # contains actual audio data
 
-
-#initialize things
-import_data()
-start_stream()
-init_voices()
-
-
-while True:
-    ServiceMidi()
-    ServiceVoices()
-    ServiceEffects()
-
-'''
 import Voice as vc
-import Sample
 import importdata as id
 import AudioStream as audio
-import numpy as np
-import Midi as md
+from Midi import MidiQueue
 import time
 
-Voices = vc.VoiceList(16, audio.buffersize)
 
-id.import_data()
-new_note = 1
+
 run = True
 times = []
-count = 0
+
+# Initialize
+Voices = vc.VoiceList(32, audio.buffersize)
+print("Importing data")
+id.import_data()
+md = MidiQueue()
+
 # start audio stream
 audio.startstream()
-print("Init done.")
+print("Initialized")
+
 while run:
 
-    new_note = md.service_midi()
-    if new_note != -1:
-        #print(new_note)
-        # TODO: may have multiple new notes
-        Voices.get_voice(id.Samples.get_sample(new_note))
-        #print(id.Sample_List[0].DataArray)
-        new_note = -1
-        count += 1
-        if count > 50:
-            break
+    t4 = time.time()
+    midi_event = md.service_midi()
+    if midi_event is not None:
+        if midi_event.note_on:
+            print(" Note:", midi_event.note, "Note On", " velocity:", midi_event.velocity)
+            #print(" Queue: ", md.queue[0].note)
+            samp = id.Samples.get_sample(midi_event.note)
+            if samp != None:
+                print("Getting Voice")
+                result = Voices.get_voice(samp, midi_event.velocity)
+                if result == False:
+                    print("No Voices")
+
+            else:
+                print("No sample")
+        if midi_event.note_off:
+            print(" Note:", midi_event.note, "Note Off", " velocity:", midi_event.velocity)
+            Voices.note_off(midi_event.note)
+
+    # TODO: release notes
 
     if audio.datasent:
         # move new data to buffer
@@ -64,6 +60,8 @@ while run:
         #print(audio.outputbuffer)
         audio.datasent = False
         times.append(t1)
+    t5 = time.time()
+    #print("Loop time: ", t5-t4)
 
 tdiff = []
 prevt = 0

@@ -26,7 +26,7 @@ def import_data():
     wf2 = wave.open(file2, 'rb')
     wf3 = wave.open(file3, 'rb')
 
-    print(wf.getsampwidth())
+    #print(wf.getsampwidth())
 
     # convert to np arrays
     C2 = convert_wav_to_np(wf)
@@ -36,6 +36,27 @@ def import_data():
     Samples.add_sample(24, C2)
     Samples.add_sample(31, G2)
     Samples.add_sample(38, D3)
+
+    Samples.fill_out_pitches()
+
+'''
+    Samples.pitch_shift(24, 25)
+    Samples.pitch_shift(24, 26)
+    Samples.pitch_shift(24, 27)
+    Samples.pitch_shift(24, 28)
+    Samples.pitch_shift(24, 29)
+    Samples.pitch_shift(24, 30)
+    #Samples.pitch_shift(24, 31)
+    Samples.pitch_shift(24, 32)
+    Samples.pitch_shift(24, 33)
+    Samples.pitch_shift(24, 34)
+    Samples.pitch_shift(24, 35)
+    Samples.pitch_shift(24, 36)
+    Samples.pitch_shift(24, 60)
+'''
+
+    #Samples.plot_freq(24)
+    #Samples.plot_freq(25)
 
     # read in wav files into Samples class (numpy arrays and metadata). Parse file names for note names (eg G2)
     # create pitch shifted versions of Samples to fill keyboard
