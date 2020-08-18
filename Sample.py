@@ -3,6 +3,7 @@ import numpy as np
 import AudioStream as audio
 from fractions import Fraction
 from scipy import signal
+import time
 
 class SampleList():
     def __init__(self):
@@ -18,16 +19,20 @@ class SampleList():
         return None
 
     def fill_out_pitches(self):
+        # TODO: Not currently filling out bottom pitches. Also C# is missing
         max_shift = 12
         # fill original pitches list.
         og_pitches = []
         for samp in self.sample_list:
             og_pitches.append(samp.note)
         og_pitches.sort()
+        print(og_pitches)
 
+        time_list = []
         # create list of shifts and which note to shift
         max = 0
         for index in range(0, len(og_pitches)):
+            t1 = time.time()
             # calculate min shift for this note
             if index == 0:
                 min = og_pitches[index] - max_shift
@@ -42,14 +47,21 @@ class SampleList():
                 max = og_pitches[index] + max_shift
             else:
                 max = og_pitches[index+1] - og_pitches[index]
-                max = round(max/2)
-                if max > max_shift:
-                    max = max_shift
-
+                max = round(max/2) + og_pitches[index]
+                if max > og_pitches[index]+max_shift:
+                    print("Max = ", max)
+                    max = og_pitches[index]+max_shift
+            print("Index: ", index, "Min shift: ", min, "Max shift: ", max)
+            t2 = time.time()
+            tl = []
             # pitchshift this note
             for new_note in range(min, max):
                 if new_note != og_pitches[index]:
+                    t3 = time.time()
                     self.pitch_shift(og_pitches[index], new_note)
+                    tl.append(time.time()-t3)
+            time_list.append([t1, t2, tl])
+        print("Time List: \n", time_list)
 
     def pitch_shift(self, og_note, shifted_note):
         # Get original Sample and note/freq

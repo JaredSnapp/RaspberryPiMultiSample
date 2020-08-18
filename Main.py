@@ -36,20 +36,22 @@ while run:
     midi_event = md.service_midi()
     if midi_event is not None:
         if midi_event.note_on:
-            print(" Note:", midi_event.note, "Note On", " velocity:", midi_event.velocity)
-            #print(" Queue: ", md.queue[0].note)
+            #print(" Note:", midi_event.note, "Note On ", " velocity:", midi_event.velocity)
             samp = id.Samples.get_sample(midi_event.note)
             if samp != None:
-                print("Getting Voice")
+                #print("Getting Voice")
                 result = Voices.get_voice(samp, midi_event.velocity)
                 if result == False:
                     print("No Voices")
-
             else:
                 print("No sample")
         if midi_event.note_off:
-            print(" Note:", midi_event.note, "Note Off", " velocity:", midi_event.velocity)
+            #print(" Note:", midi_event.note, "Note Off", " velocity:", midi_event.velocity)
             Voices.note_off(midi_event.note)
+        if midi_event.sustain_on:
+            Voices.sustain_on()
+        if midi_event.sustain_off:
+            Voices.sustain_off()
 
     # TODO: release notes
 

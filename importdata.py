@@ -33,9 +33,9 @@ def import_data():
     G2 = convert_wav_to_np(wf2)
     D3 = convert_wav_to_np(wf3)
 
-    Samples.add_sample(24, C2)
-    Samples.add_sample(31, G2)
-    Samples.add_sample(38, D3)
+    Samples.add_sample(48, C2)
+    Samples.add_sample(55, G2)
+    Samples.add_sample(62, D3)
 
     Samples.fill_out_pitches()
 

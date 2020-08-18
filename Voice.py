@@ -18,13 +18,14 @@ class VoiceList:
         self.buffersize = buffersize
         self.voice_count = voice_count
         self.voice_list = []
+        self.sustain = False
         for i in range(0, voice_count):
             self.voice_list.append(Voice(False, self.buffersize))
 
     def get_voice(self, sample, volume):
         for voice in self.voice_list:
             if voice.active == False:
-                voice.use(sample, volume)
+                voice.use(sample, volume, self.sustain)
                 return True
         return False
 
@@ -44,6 +45,18 @@ class VoiceList:
             if voice.note == note and voice.note_on:
                 voice.note_on = False
 
+    def sustain_on(self):
+        self.sustain = True
+        for voice in self.voice_list:
+            # Don't turn sustain on for notes that have been released.
+            if voice.active and voice.note_on:
+                voice.sustain = True
+
+    def sustain_off(self):
+        self.sustain = False
+        for voice in self.voice_list:
+            if voice.active:
+                voice.sustain = False
 
 
 class Voice:
@@ -56,6 +69,9 @@ class Voice:
         self.note = None
         self.volume = 0
         self.note_on = False
+        self.note_off_index = 0
+        self.decay_rate = -0.9 / 2756  # 1/16 of a second
+        self.sustain = False
         # TODO: Voice class will be identified by the note. Add note data.
 
     def increment(self):
@@ -76,7 +92,7 @@ class Voice:
             self.increment()
         return data
 
-    def use(self, sample, volume):
+    def use(self, sample, volume, sustain):
         #TODO: Add in check for if voice is already in use.  Don't use if it is.
         self.index = 0
         self.volume = volume
@@ -86,14 +102,15 @@ class Voice:
         self.active = True
         self.note_on = True
         self.note_off_index = 0
-        self.decay_rate = -0.9/44100
+        self.decay_rate = -0.9/2756  # 1/16 of a second
+        self.sustain = sustain
 
     def envelope(self, data):
         # Volume and decay / sustain
         # It is necessary to calculate factor before multiplying array. Otherwise array might overflow and clip
-        output = (self.volume/127)*data
+        output = (self.volume/127*data)
         output = output.astype('int16')
-        if self.note_on == False:
+        if self.note_on == False and self.sustain == False:
             left = output[0::2]
             right = output[1::2]
             decay = []

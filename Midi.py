@@ -33,19 +33,27 @@ class MidiQueue:
     def service_midi_port(self):
         msg = None
         for msg in self.inport.iter_pending():
-            #print("Midi: ", msg)
+            print("Midi: ", msg)
             if msg.type == 'note_on':
-                print("Note On: ", msg.note)
+                #print("Note On: ", msg.note)
                 self.add_event(msg.note, note_on=True, velocity=msg.velocity)
             if msg.type == 'note_off':
-                print("Note Off: ", msg.note)
+                #print("Note Off: ", msg.note)
                 self.add_event(msg.note, note_off=True)
+            if msg.type == 'control_change':
+                if msg.control == 64:
+                    # sustain pedal
+                    if msg.value == 127:
+                        self.add_event(-1, sustain_on=True)
+                    else:
+                        self.add_event(-1, sustain_off=True)
 
-    def add_event(self, note, note_on=False, note_off=False, velocity=0):
+
+    def add_event(self, note, note_on=False, note_off=False, velocity=0, sustain_on=False, sustain_off=False):
         # TODO: need to check if there is already an event in the queue for this note.
         # there shouldn't be two note_on's in a list without a note_off.  Is this a possible error? Already handled by
         # midi queue.
-        event = MidiEvent(note, note_on, note_off, velocity)
+        event = MidiEvent(note, note_on, note_off, velocity, sustain_on, sustain_off)
         self.queue.append(event)
 
     def service_queue(self):
@@ -58,8 +66,10 @@ class MidiQueue:
 
 
 class MidiEvent:
-    def __init__(self, note, note_on=False, note_off=False, velocity=0):
+    def __init__(self, note, note_on=False, note_off=False, velocity=0, sustain_on=False, sustain_off=False):
         self.note = note
         self.note_on = note_on
         self.note_off = note_off
         self.velocity = velocity
+        self.sustain_on = sustain_on
+        self.sustain_off = sustain_off
