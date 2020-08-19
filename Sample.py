@@ -59,6 +59,7 @@ class SampleList():
                 if new_note != og_pitches[index]:
                     t3 = time.time()
                     self.pitch_shift(og_pitches[index], new_note)
+                    print("Done pitch shifting note ", new_note)
                     tl.append(time.time()-t3)
             time_list.append([t1, t2, tl])
         print("Time List: \n", time_list)
