@@ -24,7 +24,10 @@ import mido
 class MidiQueue:
     def __init__(self):
         self.queue = []
-        self.inport = mido.open_input('Arturia KeyStep 32')
+        ports = mido.get_input_names()
+        print("Port: ", ports[0])
+        self.inport = mido.open_input(ports[0])
+        #self.inport = mido.open_input('Arturia KeyStep 32')
 
     def service_midi(self):
         self.service_midi_port()

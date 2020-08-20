@@ -8,6 +8,7 @@ import time
 class SampleList():
     def __init__(self):
         self.sample_list = []
+        self.times = []  # timing diagnostic
 
     def add_sample(self, note, data):
         self.sample_list.append(Sample(True, note, data))
@@ -59,10 +60,10 @@ class SampleList():
                 if new_note != og_pitches[index]:
                     t3 = time.time()
                     self.pitch_shift(og_pitches[index], new_note)
-                    print("Done pitch shifting note ", new_note)
+                    print("Done pitch shifting note ", new_note, " Times list: ", self.times)
                     tl.append(time.time()-t3)
             time_list.append([t1, t2, tl])
-        print("Time List: \n", time_list)
+        #print("Time List: \n", time_list)
 
     def pitch_shift(self, og_note, shifted_note):
         # Get original Sample and note/freq
@@ -82,8 +83,20 @@ class SampleList():
         L_signal, R_signal = og_sample.split_LR()
 
         # Interpolate and decimate
+        t1 = time.time()
         shifted_L = signal.resample_poly(L_signal, I, D)
+        t2 = time.time()
         shifted_R = signal.resample_poly(R_signal, I, D)
+        t3 = time.time()
+        #signal.resample(L_signal, I, D)
+        t4 = time.time()
+        #xsignal.resample(R_signal, I, D)
+        t5 = time.time()
+        self.times.append(t2-t1)
+        self.times.append(t3-t2)
+        self.times.append(t4-t3)
+        self.times.append(t5-t4)
+
         shifted_L = shifted_L.astype('int16')
         shifted_R = shifted_R.astype('int16')
 
@@ -96,6 +109,7 @@ class SampleList():
 
 
     def freq(note):
+        # TODO: need to add comments about what frequency/ midi notes etc.
         n = note - 21
         return 27.5 * 2 ** (n / 12)
 
